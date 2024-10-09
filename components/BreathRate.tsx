@@ -27,18 +27,18 @@ export default function BreathRate({
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
-    //call API Giangvien: 10.10.30.115:8000
-    // const fetchBreathRate = async () => {
-    //     try {
-    //         const response = await fetch('https://35d3p0g9-8000.asse.devtunnels.ms/breath');
-    //         const data = await response.json().then((data) => data);
-    //         // Adjust according to your API response structure
-    //         console.log('Data fetched:', data);
-    //         setBreathRate(Math.round(data));
-    //     } catch (error) {
-    //         console.error('Error fetching data:', error);
-    //     }
-    // };
+    // call API Giangvien: 10.10.30.199:8000
+    const fetchBreathRate = async () => {
+        try {
+            const response = await fetch("http://172.20.10.5:8000/breath");
+            const data = await response.json().then((data) => data);
+            // Adjust according to your API response structure
+            console.log("Data fetched:", data);
+            setBreathRate(Math.round(data));
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        }
+    };
 
     useEffect(() => {
         if (!isEnabled) {
@@ -50,8 +50,8 @@ export default function BreathRate({
                     if (prev) {
                         return false;
                     }
-                    setBreathRate(getRandomNumber());
-                    // fetchBreathRate();
+                    // setBreathRate(getRandomNumber());
+                    fetchBreathRate();
                     return prev;
                 });
             }, 1000);
