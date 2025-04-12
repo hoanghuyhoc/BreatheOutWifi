@@ -1,16 +1,18 @@
 import ScreenProvider from "@/context/ScreenContext";
-import LanguageProvider from "@/context/LanguageContext";
-import { Slot, Stack, Tabs } from "expo-router";
-import { Text } from "react-native";
+import { Stack } from "expo-router";
+import BreathRateProvider from "@/context/BreathRateContext";
+import SettingProvider from "@/context/SettingContext";
 
 export default function App() {
     return (
-        <ScreenProvider>
-            <LanguageProvider>
-                <Stack screenOptions={{ headerShown: false }}>
-                    <Stack.Screen name="(tabs)" />
-                </Stack>
-            </LanguageProvider>
-        </ScreenProvider>
+        <BreathRateProvider>
+            <ScreenProvider>
+                <SettingProvider>
+                    <Stack screenOptions={{ headerShown: false }}>
+                        <Stack.Screen name="(tabs)" />
+                    </Stack>
+                </SettingProvider>
+            </ScreenProvider>
+        </BreathRateProvider>
     );
 }

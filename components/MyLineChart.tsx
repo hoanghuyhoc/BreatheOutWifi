@@ -3,17 +3,19 @@ import { LineChart } from "react-native-chart-kit";
 export default function MyLineChart({
     height,
     width,
+    breathRateList,
 }: {
     height: number;
     width: number;
+    breathRateList: { second: number; breathRate: number }[];
 }) {
     return (
         <LineChart
             data={{
-                labels: ["17:00", "17:15", "17:30", "17:45", "18:00"],
+                labels: breathRateList.map((item) => item.second.toString()),
                 datasets: [
                     {
-                        data: [15, 17, 18, 19, 20],
+                        data: breathRateList.map((item) => item.breathRate),
                         // color: (opacity=1) => "rgba(0, 162, 255, 1)",
                     },
                 ],

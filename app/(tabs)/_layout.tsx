@@ -1,18 +1,17 @@
 import { useFonts } from "expo-font";
 import { Tabs } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useLayoutEffect, useRef } from "react";
 import useStatusBarHeight from "@/components/useStatusBarHeight";
 import { TabBarIcon } from "@/components/navigation/TabBarIcon";
-import { View, StatusBar, Dimensions, Platform, Text } from "react-native";
-import { ScreenContext } from "@/context/ScreenContext";
-import { LanguageContext } from "@/context/LanguageContext";
+import { View, StatusBar, Dimensions, Platform } from "react-native";
+import { SettingContext } from "@/context/SettingContext";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-    const { selectedLanguage } = useContext(LanguageContext);
+    const { selectedLanguage } = useContext(SettingContext);
     const statusBarHeight = useStatusBarHeight();
     const [loaded] = useFonts({
         SpaceGrotesk_regular: require("@/assets/fonts/SpaceGrotesk_regular.ttf"),
@@ -31,7 +30,7 @@ export default function RootLayout() {
     }
 
     return (
-        <>
+        <View style={{ height: "100%", width: "100%" }}>
             {Platform.OS === "ios" ? (
                 <View
                     style={{
@@ -46,11 +45,17 @@ export default function RootLayout() {
                     />
                 </View>
             ) : (
-                <StatusBar
-                    barStyle={"default"}
-                    translucent
-                    backgroundColor={"#f0f0f0"}
-                />
+                <View
+                    style={{
+                        height: statusBarHeight,
+                        backgroundColor: "#f0f0f0",
+                    }}
+                >
+                    <StatusBar
+                        barStyle={"dark-content"}
+                        backgroundColor={"#f0f0f0"}
+                    />
+                </View>
             )}
             <View
                 style={{
@@ -72,6 +77,7 @@ export default function RootLayout() {
                             shadowOpacity: 1,
                             borderTopLeftRadius: 20,
                             borderTopRightRadius: 20,
+                            height: 60
                         },
                     }}
                 >
@@ -91,30 +97,30 @@ export default function RootLayout() {
                         }}
                     />
                     <Tabs.Screen
-                        name="dashboard"
+                        name="alarm"
                         options={{
                             title:
                                 selectedLanguage == "English"
-                                    ? "Dashboard"
-                                    : "Thống kê",
+                                    ? "Reminder"
+                                    : "Nhắc nhở",
                             tabBarIcon: ({ color, focused }) => (
                                 <TabBarIcon
-                                    name={focused ? "pulse" : "pulse-outline"}
+                                    name={focused ? "alarm" : "alarm-outline"}
                                     color={color}
                                 />
                             ),
                         }}
                     />
                     <Tabs.Screen
-                        name="meditation"
+                        name="timer"
                         options={{
                             title:
                                 selectedLanguage == "English"
-                                    ? "Meditate"
-                                    : "Thiền",
+                                    ? "Focus"
+                                    : "Tập trung",
                             tabBarIcon: ({ color, focused }) => (
                                 <TabBarIcon
-                                    name={focused ? "heart" : "heart-outline"}
+                                    name={focused ? "timer" : "timer-outline"}
                                     color={color}
                                 />
                             ),
@@ -141,6 +147,6 @@ export default function RootLayout() {
                     />
                 </Tabs>
             </View>
-        </>
+        </View>
     );
 }

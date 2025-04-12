@@ -5,28 +5,67 @@ import {
     Modal,
     StyleSheet,
     TouchableOpacity,
+    ModalProps,
+    TextInput,
+    Button,
 } from "react-native";
-import { useContext, useState } from "react";
+import { useContext, useRef, useState } from "react";
 import { ScreenContext } from "@/context/ScreenContext";
-import { LanguageContext } from "@/context/LanguageContext";
-import RNPickerSelect from "react-native-picker-select";
+import { SettingContext } from "@/context/SettingContext";
 import { Ionicons } from "@expo/vector-icons";
-import { SelectList } from "react-native-dropdown-select-list";
-import Picker from "react-native-picker-select";
+import { BreathRateContext } from "@/context/BreathRateContext";
 
-var screenWindowHeight = 0;
 export default function Settings() {
-    const { selectedLanguage, setSelectedLanguage } =
-        useContext(LanguageContext);
+    const {
+        selectedLanguage,
+        setSelectedLanguage,
+        serverAddress,
+        setServerAddress,
+    } = useContext(SettingContext);
+    
+    const [tempAddress, setTempAddress] = useState(serverAddress);
+    const {
+        setEmotion,
+        setIsFocusEnabled,
+        setIsHomeEnabled
+    } = useContext(BreathRateContext);
     const screen = useContext(ScreenContext);
-    screenWindowHeight = screen.windowHeight;
-    const [modalVisible, setModalVisible] = useState(false);
-    // const data = [
-    //     { key: "1", value: "Tiếng Việt" },
-    //     { key: "2", value: "English" },
-    // ];
+    const [languageOptionModalVisible, setLanguageOptionModalVisible] =
+        useState(false);
+    const [serverAddressModalVisible, setServerAddressModalVisible] =
+        useState(false);
+    const [resetDataModalVisible, setResetDataModalVisible] = useState(false);
     const languages = ["English", "Tiếng Việt"];
-
+    const styles = StyleSheet.create({
+        modalContainer: {
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "transparent",
+        },
+        modalContent: {
+            width: "80%",
+            backgroundColor: "gray",
+            borderRadius: 10,
+            padding: 20,
+            alignItems: "center",
+        },
+        languageOption: {
+            padding: 10,
+            width: "100%",
+            alignItems: "center",
+        },
+        languageText: {
+            fontFamily: "SpaceGrotesk_regular",
+            fontSize: 0.03 * screen.windowHeight,
+            color: "white",
+        },
+        closeButton: {
+            marginTop: 20,
+            fontSize: 16,
+            color: "blue",
+        },
+    });
     return (
         <View
             style={{
@@ -37,17 +76,9 @@ export default function Settings() {
                 justifyContent: "center",
                 alignItems: "center",
                 backgroundColor: "#f0f0f0",
+                gap: 20,
             }}
         >
-            {/* <Text
-                style={{
-                    color: "#2eb5fa",
-                    fontFamily: "SpaceGrotesk_bold",
-                    fontSize: 0.03778 * screen.windowHeight,
-                }}
-            >
-                Settings
-            </Text> */}
             <View
                 style={{
                     borderRadius: 40,
@@ -75,9 +106,7 @@ export default function Settings() {
                         alignItems: "center",
                         gap: 20,
                     }}
-                    onPress={() => {
-                        setModalVisible(true);
-                    }}
+                    onPress={() => setLanguageOptionModalVisible(true)}
                 >
                     <Text
                         style={{
@@ -97,10 +126,8 @@ export default function Settings() {
             <Modal
                 animationType="slide"
                 transparent={true}
-                visible={modalVisible}
-                onRequestClose={() => {
-                    setModalVisible(!modalVisible);
-                }}
+                visible={languageOptionModalVisible}
+                onRequestClose={() => setLanguageOptionModalVisible(false)}
             >
                 <View style={styles.modalContainer}>
                     <View style={styles.modalContent}>
@@ -110,7 +137,7 @@ export default function Settings() {
                                 style={styles.languageOption}
                                 onPress={() => {
                                     setSelectedLanguage(language);
-                                    setModalVisible(false);
+                                    setLanguageOptionModalVisible(false);
                                 }}
                             >
                                 <Text style={styles.languageText}>
@@ -121,37 +148,234 @@ export default function Settings() {
                     </View>
                 </View>
             </Modal>
+
+            <View
+                style={{
+                    borderRadius: 40,
+                    backgroundColor: "white",
+                    width: "95%",
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    padding: 20,
+                }}
+            >
+                <Text
+                    style={{
+                        fontFamily: "SpaceGrotesk_bold",
+                        fontSize: 0.03 * screen.windowHeight,
+                    }}
+                >
+                    {selectedLanguage == "English"
+                        ? "Server address"
+                        : "Địa chỉ máy chủ"}
+                </Text>
+                <Pressable
+                    style={{
+                        display: "flex",
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 20,
+                    }}
+                    onPress={() => {
+                        setServerAddressModalVisible(true);
+                    }}
+                >
+                    <Ionicons
+                        name="chevron-forward"
+                        size={0.03 * screen.windowHeight}
+                        color="black"
+                    />
+                </Pressable>
+            </View>
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={serverAddressModalVisible}
+                onRequestClose={() => setServerAddressModalVisible(false)}
+            >
+                <View style={styles.modalContainer}>
+                    <View
+                        style={{
+                            width: "80%",
+                            backgroundColor: "gray",
+                            borderRadius: 10,
+                            padding: 20,
+                            alignItems: "center",
+                            gap: 20,
+                        }}
+                    >
+                        <TextInput
+                            style={{
+                                backgroundColor: "white",
+                                borderRadius: 10,
+                                padding: 10,
+                                width: "100%",
+                            }}
+                            placeholder={
+                                selectedLanguage == "English"
+                                    ? "Enter server address"
+                                    : "Nhập địa chỉ máy chủ"
+                            }
+                            multiline={false}
+                            scrollEnabled={true}
+                            value={tempAddress}
+                            onChangeText={(text) => setTempAddress(text)}
+                        />
+                        <View
+                            style={{
+                                display: "flex",
+                                flexDirection: "row",
+                                gap: 20,
+                            }}
+                        >
+                            <Pressable
+                                style={{
+                                    backgroundColor: "green",
+                                    padding: 10,
+                                    borderRadius: 10,
+                                }}
+                                onPress={() => {
+                                    setServerAddressModalVisible(false);
+                                    setServerAddress(tempAddress);
+                                }}
+                            >
+                                <Text style={{ color: "white" }}>
+                                    {selectedLanguage == "English"
+                                        ? "Save"
+                                        : "Lưu"}
+                                </Text>
+                            </Pressable>
+                            <Pressable
+                                style={{
+                                    backgroundColor: "white",
+                                    padding: 10,
+                                    borderRadius: 10,
+                                }}
+                                onPress={() => {
+                                    setServerAddressModalVisible(false);
+                                    setTempAddress(serverAddress);
+                                }}
+                            >
+                                <Text style={{ color: "black" }}>
+                                    {selectedLanguage == "English"
+                                        ? "Cancel"
+                                        : "Hủy"}
+                                </Text>
+                            </Pressable>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
+
+            <View
+                style={{
+                    borderRadius: 40,
+                    backgroundColor: "white",
+                    width: "95%",
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    padding: 20,
+                }}
+            >
+                <Text
+                    style={{
+                        fontFamily: "SpaceGrotesk_bold",
+                        fontSize: 0.03 * screen.windowHeight,
+                    }}
+                >
+                    {selectedLanguage == "English"
+                        ? "Reset data"
+                        : "Đặt lại dữ liệu"}
+                </Text>
+                <Pressable
+                    style={{
+                        display: "flex",
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 20,
+                    }}
+                    onPress={() => {
+                        setResetDataModalVisible(true);
+                    }}
+                >
+                    <Ionicons
+                        name="chevron-forward"
+                        size={0.03 * screen.windowHeight}
+                        color="black"
+                    />
+                </Pressable>
+            </View>
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={resetDataModalVisible}
+            >
+                <View style={styles.modalContainer}>
+                    <View
+                        style={{
+                            width: "80%",
+                            backgroundColor: "gray",
+                            borderRadius: 10,
+                            padding: 20,
+                            alignItems: "center",
+                            gap: 20,
+                        }}
+                    >
+                        <Text style={styles.languageText}>
+                            {selectedLanguage == "English"
+                                ? "Are you sure you want to reset data?"
+                                : "Bạn có chắc chắn muốn đặt lại dữ liệu không?"}
+                        </Text>
+                        <View
+                            style={{
+                                display: "flex",
+                                flexDirection: "row",
+                                gap: 20,
+                            }}
+                        >
+                            <Pressable
+                                style={{
+                                    backgroundColor: "green",
+                                    padding: 10,
+                                    borderRadius: 10,
+                                }}
+                                onPress={() => {
+                                    setEmotion(["Neutral"]);
+                                    setIsFocusEnabled(false);
+                                    setIsHomeEnabled(false);
+                                    setResetDataModalVisible(false);
+                                }}
+                            >
+                                <Text style={{ color: "white" }}>
+                                    {selectedLanguage == "English"
+                                        ? "Yes"
+                                        : "Có"}
+                                </Text>
+                            </Pressable>
+                            <Pressable
+                                style={{
+                                    backgroundColor: "white",
+                                    padding: 10,
+                                    borderRadius: 10,
+                                }}
+                                onPress={() => {
+                                    setResetDataModalVisible(false);
+                                }}
+                            >
+                                <Text style={{ color: "black" }}>
+                                    {selectedLanguage == "English"
+                                        ? "No"
+                                        : "Không"}
+                                </Text>
+                            </Pressable>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 }
-
-const styles = StyleSheet.create({
-    modalContainer: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "transparent",
-    },
-    modalContent: {
-        width: "80%",
-        backgroundColor: "gray",
-        borderRadius: 10,
-        padding: 20,
-        alignItems: "center",
-    },
-    languageOption: {
-        padding: 10,
-        width: "100%",
-        alignItems: "center",
-    },
-    languageText: {
-        fontFamily: "SpaceGrotesk_regular",
-        fontSize: 0.03 * screenWindowHeight,
-        color: "white",
-    },
-    closeButton: {
-        marginTop: 20,
-        fontSize: 16,
-        color: "blue",
-    },
-});

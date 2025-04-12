@@ -6,38 +6,34 @@ import { ScrollView, View, ViewStyle } from "react-native";
 
 export default function LineChart({
     containerStyle,
+    DATA,
 }: {
     containerStyle: ViewStyle;
+    DATA: { minute: number; breathRate: number }[];
 }) {
     const font = require("@/assets/fonts/SpaceGrotesk_regular.ttf");
-    const DATA = Array.from({ length: 10 }, (_, i) => ({
-        time: new Date(Date.now() + i *15* 60000).toLocaleTimeString("vn-VN", {
-            hour: "2-digit",
-            minute: "2-digit",
-        }),
-        rate: 17 + 3 * Math.random(),
-    }));
     return (
         <View style={containerStyle}>
             <CartesianChart
                 data={DATA}
-                xKey="time"
-                yKeys={["rate"]}
+                xKey="minute"
+                yKeys={["breathRate"]}
                 axisOptions={{
                     font: useFont(font, 12),
                     labelColor: "black",
                     lineColor: "black",
                     axisSide: { x: "bottom", y: "right" },
                 }}
-                
+                // domain={{ x: [xMin, xMax], y: [yMin, yMax] }}
+                domainPadding={{ bottom: 100, top: 100 }}
             >
                 {({ points, chartBounds }) => {
                     return (
                         <Line
-                            points={points.rate}
+                            points={points.breathRate}
                             color={"black"}
                             strokeWidth={3}
-                            animate={{ type: "timing", duration: 500 }}
+                            animate={{ type: "spring", duration: 0 }}
                         />
                     );
                 }}
