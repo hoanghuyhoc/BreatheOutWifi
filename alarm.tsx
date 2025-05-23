@@ -14,6 +14,7 @@ import {
 import DateTimePicker, {
     DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
+import { NativeModules } from "react-native";
 
 function ReminderCard({
     id,
@@ -26,35 +27,24 @@ function ReminderCard({
     datetime: Date;
     removeFromList: (id: number) => void;
 }) {
-    const { selectedLanguage } = useContext(SettingContext);
     const deleteButtonRef = useRef<any>(null);
-    let fTime =
-        String(datetime.getHours()).padStart(2, "0") +
-        ":" +
-        String(datetime.getMinutes()).padStart(2, "0");
-
-    useEffect(() => {
-        const countdown = setInterval(() => {
-            let title = "";
-            let message = "";
-            if (selectedLanguage === "English") {
-                title = "Reminder";
-                message = "Let's take a break!";
-            } else {
-                title = "Nhắc nhở";
-                message = "Hãy nghỉ ngơi một chút";
-            }
-            Alert.alert(title, message, [{ text: "OK" }]);
-        }, datetime.getHours() * 3600 * 1000 + datetime.getMinutes() * 60 * 1000);
-        return () => clearInterval(countdown);
-    }, []);
-
+    let fDate =
+        datetime.getDate() +
+        "/" +
+        (datetime.getMonth() + 1) +
+        "/" +
+        datetime.getFullYear();
+    let fTime = datetime.getHours() + ":" + datetime.getMinutes();
+    // function deleteReminder(id: number, removeFromList: (id: number) => void) {
+    //     removeFromList(id);
+    // }
     return (
         <View
             key={id}
             style={{
                 borderRadius: 10,
                 backgroundColor: "#ffffff",
+                padding: 10,
                 margin: 15,
                 shadowRadius: 4,
                 shadowColor: "#000000",
@@ -64,14 +54,7 @@ function ReminderCard({
                 flexDirection: "row",
             }}
         >
-            <View
-                style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    flex: 1,
-                    padding: 10,
-                }}
-            >
+            <View style={{ display: "flex", flexDirection: "column", flex: 1 }}>
                 <Text style={{ fontSize: 25, fontWeight: "bold" }}>
                     {title}
                 </Text>
@@ -79,20 +62,17 @@ function ReminderCard({
                     style={{
                         fontSize: 20,
                     }}
-                >{`${
-                    selectedLanguage == "English" ? "Period" : "Thời gian"
-                }: ${fTime}`}</Text>
+                >{`${fDate}  ${fTime}`}</Text>
             </View>
             <Pressable
                 ref={deleteButtonRef}
                 style={{
-                    height: "100%",
+                    aspectRatio: 1,
+                    borderRadius: 9999,
                     backgroundColor: "#ff0000",
                     justifyContent: "center",
                     alignItems: "center",
                     width: "20%",
-                    borderTopRightRadius: 10,
-                    borderBottomRightRadius: 10,
                 }}
                 onPressIn={() => {
                     deleteButtonRef.current?.setNativeProps({
@@ -114,30 +94,42 @@ function ReminderCard({
     );
 }
 
-function AddReminderModal({
+function AddReminder({
     addReminder,
     show,
     setShow,
 }: {
-    addReminder: ({ title, time }: { title: string; time: Date }) => void;
+    addReminder: ({
+        title,
+        datetime,
+    }: {
+        title: string;
+        datetime: Date;
+    }) => void;
     show: boolean;
     setShow: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
     const [title, setTitle] = useState("");
     const modalContentRef = useRef<View>(null);
-    const [tempTime, setTempTime] = useState(new Date(2025, 1, 1, 0, 0, 0, 0));
+    const [tempDate, setTempDate] = useState(new Date());
     const { selectedLanguage } = useContext(SettingContext);
     function close() {
         setShow(false);
     }
     function onChange(event: DateTimePickerEvent, selectedDate?: Date) {
-        const currentDate = selectedDate || tempTime;
+        const currentDate = selectedDate || tempDate;
         setShow(Platform.OS === "ios");
-        setTempTime(currentDate);
+        setTempDate(currentDate);
 
         let tempDate_ = new Date(currentDate);
+        let fDate =
+            tempDate_.getDate() +
+            "/" +
+            (tempDate_.getMonth() + 1) +
+            "/" +
+            tempDate_.getFullYear();
         let fTime = tempDate_.getHours() + ":" + tempDate_.getMinutes();
-        console.log("Selected time: ", fTime);
+        console.log("Selected date: ", fDate, "Selected time: ", fTime);
     }
 
     function showAlert() {
@@ -145,10 +137,10 @@ function AddReminderModal({
         let message = "";
         if (selectedLanguage === "English") {
             title = "Error";
-            message = "Please choose a time period ";
+            message = "You cannot choose a date in the past";
         } else {
             title = "Lỗi";
-            message = "Vui lòng chọn thời gian";
+            message = "Bạn không thể chọn ngày trong quá khứ";
         }
         Alert.alert(title, message, [
             {
@@ -190,7 +182,7 @@ function AddReminderModal({
                             borderRadius: 20,
                             display: "flex",
                             flexDirection: "column",
-                            alignItems: "center",
+                            // alignItems: "center",
                             // justifyContent: "center",
                             paddingHorizontal: 10,
                             paddingVertical: 10,
@@ -208,31 +200,18 @@ function AddReminderModal({
                                 padding: 10,
                                 fontSize: 18,
                                 marginBottom: 10,
-                                width: 200,
                             }}
                             onChangeText={(text) => {
                                 setTitle(text);
                             }}
                             value={title}
-                            // onLayout={(event)=>{
-                            //     modalContentRef.current?.setNativeProps({
-                            //         style: {
-                            //             height: modalContentRef.current
-                            //                 ?.
-                            //                 .height,
-                            //         },
-                            //     });
-                            // }}
                         />
                         <DateTimePicker
                             testID="dateTimePicker"
-                            value={tempTime}
-                            mode="time"
-                            display="default"
+                            value={tempDate}
+                            mode="datetime"
+                            display="inline"
                             onChange={onChange}
-                            style={{
-                                transform: "translateX(-5%)",
-                            }}
                         />
                         <Pressable
                             onPress={() => {
@@ -253,28 +232,12 @@ function AddReminderModal({
                         </Pressable>
                         <Pressable
                             onPress={() => {
-                                if (
-                                    tempTime.toTimeString() ===
-                                    new Date(
-                                        2025,
-                                        1,
-                                        1,
-                                        0,
-                                        0,
-                                        0,
-                                        0
-                                    ).toTimeString()
-                                ) {
+                                if (tempDate <= new Date()) {
                                     showAlert();
                                 } else {
                                     addReminder({
-                                        title:
-                                            title.length > 0
-                                                ? title
-                                                : selectedLanguage === "English"
-                                                ? "Reminder"
-                                                : "Nhắc nhở",
-                                        time: tempTime,
+                                        title: title,
+                                        datetime: tempDate,
                                     });
                                     close();
                                 }
@@ -298,7 +261,7 @@ function AddReminderModal({
         ) : (
             <DateTimePicker
                 testID="dateTimePicker"
-                value={tempTime}
+                value={tempDate}
                 mode="datetime"
                 display="default"
                 onChange={onChange}
@@ -312,10 +275,16 @@ export default function Alarm() {
     const [show, setShow] = useState(false);
 
     const [reminderList, setReminderList] = useState<
-        { id: number; title: string; time: Date }[]
+        { id: number; title: string; datetime: Date }[]
     >([]);
 
-    function addReminder({ title, time }: { title: string; time: Date }) {
+    function addReminder({
+        title,
+        datetime,
+    }: {
+        title: string;
+        datetime: Date;
+    }) {
         let nextId = 0;
         const last = reminderList.find((value, index, obj) => {
             if (value.id + 1 < obj[index + 1].id) {
@@ -328,7 +297,7 @@ export default function Alarm() {
             nextId = (reminderList.at(-1)?.id ?? +1) || 0;
         }
 
-        setReminderList((prev) => [...prev, { id: nextId, title, time }]);
+        setReminderList((prev) => [...prev, { id: nextId, title, datetime }]);
     }
 
     function removeFromList(id: number) {
@@ -355,7 +324,7 @@ export default function Alarm() {
                             <ReminderCard
                                 id={item.id}
                                 title={item.title}
-                                datetime={item.time}
+                                datetime={item.datetime}
                                 removeFromList={removeFromList}
                             />
                         );
@@ -395,7 +364,7 @@ export default function Alarm() {
                     <Ionicons name="add" size={35} color="#ffffff" />
                 </Pressable>
             </View>
-            <AddReminderModal
+            <AddReminder
                 addReminder={addReminder}
                 show={show}
                 setShow={setShow}
